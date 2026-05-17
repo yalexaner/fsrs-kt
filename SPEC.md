@@ -16,6 +16,13 @@ should be able to cross-check it against this document.
 Scope of v1.0: **scheduler only**. The optimizer is explicitly out of scope and
 covered briefly in §10 (Roadmap).
 
+**Last revision: 2026-05-17.** Concrete version pins applied during Phase 1
+implementation (see §5.1 column "Pinned in v0.0.1"). The original draft was
+written against Kotlin 2.2 / Gradle 8.10 / JDK 21 / kotlinx-datetime 0.6.2;
+the implementation moved to the latest stable line — see §5.1 and §3.4 for
+the consequence on `Instant`. `TODO.md` carries a status block summarising
+what has been built.
+
 ---
 
 ## 1. Project overview
@@ -362,7 +369,7 @@ deterministic-on-demand for tests (accept an injectable RNG).
 ### 3.2 Package layout
 
 ```text
-io.github.<namespace>.fsrs
+io.github.yalexaner.fsrs
 ├── Card           // public data class
 ├── Rating         // public enum
 ├── State          // public enum
@@ -471,8 +478,16 @@ Rationale:
 
 ### 3.4 Time handling
 
-- All timestamps are `kotlinx.datetime.Instant` and represent **UTC**
-  internally. Matches `py-fsrs`'s "UTC only" rule.
+- All timestamps are `kotlin.time.Instant` and represent **UTC** internally.
+  Matches `py-fsrs`'s "UTC only" rule.
+  > **Note (kotlinx-datetime 0.7+):** `Instant` was moved out of
+  > `kotlinx.datetime` into the Kotlin stdlib's `kotlin.time` package.
+  > Versions 0.7.1+ ship a type alias `kotlinx.datetime.Instant =
+  > kotlin.time.Instant` for back-compat, so older code keeps compiling,
+  > but the canonical import in new code (and in the public API of
+  > `fsrs-kt`) is `kotlin.time.Instant`. The same applies to `Clock`
+  > (`kotlin.time.Clock`). `kotlinx-datetime` is still required for
+  > `LocalDate`, `TimeZone`, formatting, etc.
 - Day boundaries (for the same-day vs inter-day distinction in §2.7–2.9) are
   computed in UTC from the elapsed time between `card.lastReview` and the
   review time. The consumer's preferred "study day boundary" (e.g.
@@ -612,25 +627,25 @@ synchronous pure math.
 
 ### 5.1 Toolchain
 
-| Component | Version (as of this spec) |
-|-----------|---------------------------|
-| Kotlin | 2.2.x or newer |
-| Gradle | 8.10+ |
-| JDK (for the build) | 21 (LTS) — toolchain auto-provisioning |
-| Android Gradle Plugin | required only if `androidTarget()` is enabled |
-| `kotlinx-datetime` | latest stable |
-| `vanniktech/gradle-maven-publish-plugin` | 0.36.0+ |
-| Dokka | v2 (the v1 plugin is being removed) |
+| Component | Version (as of this spec) | Pinned in v0.0.1 |
+|-----------|---------------------------|------------------|
+| Kotlin | 2.2.x or newer | **2.3.21** |
+| Gradle | 8.10+ | **9.3.0** (KGP 2.3.21's max fully-supported version; 9.4+ works but emits deprecation warnings) |
+| JDK (for the build) | 21 (LTS) — toolchain auto-provisioning | **25 LTS** |
+| Android Gradle Plugin | required only if `androidTarget()` is enabled | n/a (deferred) |
+| `kotlinx-datetime` | latest stable | **0.8.0** (see §3.4 note on `Instant`) |
+| `vanniktech/gradle-maven-publish-plugin` | 0.36.0+ | added in Phase 10 |
+| Dokka | v2 (the v1 plugin is being removed) | added in Phase 9 |
 
 ### 5.2 Version catalog (`gradle/libs.versions.toml`)
 
 ```toml
 [versions]
-kotlin = "2.2.0"
-kotlinx-datetime = "0.6.2"
+kotlin = "2.3.21"
+kotlinx-datetime = "0.8.0"
 android-gradle = "8.7.0"        # only if androidTarget is enabled
-maven-publish = "0.36.0"
-dokka = "2.0.0"
+maven-publish = "0.36.0"        # added in Phase 10
+dokka = "2.0.0"                 # added in Phase 9
 
 [libraries]
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
@@ -643,6 +658,11 @@ dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 ```
 
 Pin exact versions; the project should not silently float.
+
+The v0.0.1 catalog only declares what Phase 1 needs (`kotlin` version,
+`kotlinx-datetime` library, `kotlin-multiplatform` plugin). Plugin entries
+for Dokka, Android, and `vanniktech.maven.publish` are added when their
+respective phases land.
 
 ### 5.3 Root `settings.gradle.kts`
 
@@ -678,12 +698,12 @@ plugins {
     // alias(libs.plugins.android.library)  // only if androidTarget enabled
 }
 
-group = "io.github.<namespace>"
+group = "io.github.yalexaner"
 version = "0.1.0"   // semver; bump before release
 
 kotlin {
     explicitApi()                              // require visibility modifiers on public API
-    jvmToolchain(21)
+    jvmToolchain(25)
 
     jvm()
     // androidTarget { publishLibraryVariants("release") }
@@ -719,7 +739,7 @@ mavenPublishing {
         name.set("fsrs-kt")
         description.set("Pure Kotlin Multiplatform implementation of the FSRS-6 spaced repetition scheduler.")
         inceptionYear.set("2026")
-        url.set("https://github.com/<owner>/fsrs-kt/")
+        url.set("https://github.com/yalexaner/fsrs-kt/")
         licenses {
             license {
                 name.set("MIT License")
@@ -729,15 +749,15 @@ mavenPublishing {
         }
         developers {
             developer {
-                id.set("<github-id>")
-                name.set("<your name>")
-                url.set("https://github.com/<owner>")
+                id.set("yalexaner")
+                name.set("<your name>")           // fill in before Phase 10
+                url.set("https://github.com/yalexaner")
             }
         }
         scm {
-            url.set("https://github.com/<owner>/fsrs-kt/")
-            connection.set("scm:git:git://github.com/<owner>/fsrs-kt.git")
-            developerConnection.set("scm:git:ssh://git@github.com/<owner>/fsrs-kt.git")
+            url.set("https://github.com/yalexaner/fsrs-kt/")
+            connection.set("scm:git:git://github.com/yalexaner/fsrs-kt.git")
+            developerConnection.set("scm:git:ssh://git@github.com/yalexaner/fsrs-kt.git")
         }
     }
 }
@@ -748,7 +768,7 @@ Key choices:
 - `explicitApi()` — every public declaration must have `public` written out,
   or get a `private`/`internal`. Catches accidental API exposure at compile
   time. Mandatory for a library that promises SemVer.
-- `jvmToolchain(21)` — Gradle auto-provisions JDK 21 if missing.
+- `jvmToolchain(25)` — Gradle auto-provisions JDK 25 if missing.
 - `SonatypeHost.CENTRAL_PORTAL` — Maven Central's new portal (the old OSSRH
   Nexus is being sunset). The vanniktech plugin handles both, but new
   accounts (post-March 2024) must use the portal.
@@ -837,7 +857,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: 21
+          java-version: 25
 
       - uses: gradle/actions/setup-gradle@v3
 
@@ -861,8 +881,8 @@ check on the Maven Central UI before each release.
 # .github/workflows/ci.yml
 name: CI
 on:
-  push: { branches: [main] }
-  pull_request: { branches: [main] }
+  push: { branches: [master] }
+  pull_request: { branches: [master] }
 
 jobs:
   test:
@@ -874,7 +894,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
-        with: { distribution: 'zulu', java-version: 21 }
+        with: { distribution: 'zulu', java-version: 25 }
       - uses: gradle/actions/setup-gradle@v3
       - run: ./gradlew build
 ```

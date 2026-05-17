@@ -9,18 +9,37 @@ Conventions:
 - A task is "atomic" — one focused work session, ideally under an hour. If
   something feels bigger, split it.
 - Definition-of-done at the end of each phase is the gate before moving on.
+- VCS: `jj` colocated with `git`; default branch is `master`.
+
+## Status (2026-05-17)
+
+- **Phase 1 — Project skeleton:** ✅ complete. JVM build green on first run.
+- **Next:** Phase 2 (public types).
+
+### Decisions that diverged from the original spec defaults
+
+- **Maven namespace:** `io.github.yalexaner` (was `<your-gh-username>`).
+- **Branch name:** `master` (was `main`; project convention).
+- **Toolchain bumped to latest stable:**
+  - Kotlin 2.2.0 → **2.3.21**
+  - kotlinx-datetime 0.6.2 → **0.8.0** (NB: `Instant` moved to
+    `kotlin.time.Instant`; 0.7.1+ provides back-compat type aliases)
+  - Gradle 8.10 → **9.3.0** (KGP 2.3.21's max fully-supported version;
+    9.5.x works but emits deprecation warnings)
+  - JDK 21 LTS → **25 LTS**
+- **Dokka + vanniktech/maven-publish plugins:** deferred until Phase 9/10
+  (not added in v1 of `libs.versions.toml` or root `build.gradle.kts`).
+- **GitHub repo:** https://github.com/yalexaner/fsrs-kt — created and
+  master pushed.
 
 ---
 
 ## Prerequisites (one-time, before any code)
 
-- [ ] JDK 21 installed locally (or trust Gradle toolchain auto-provision).
-- [ ] Git installed; signed-commits set up if desired.
-- [ ] A GitHub account; pick the repo name (`fsrs-kt` recommended) and
-      owner; don't create the repo yet — we'll do it in Phase 1.
-- [ ] Pick the Maven namespace: either `io.github.<your-gh-username>` or
-      `com.<yourdomain>` (see §6.1). Write it down — it gets baked into
-      `build.gradle.kts`.
+- [x] JDK 25 installed locally (bumped from 21; `jdk25-openjdk` on Arch).
+- [x] Git installed; `jj` colocated repo set up.
+- [x] GitHub repo created: `yalexaner/fsrs-kt` (Phase 1 task; done early).
+- [x] Maven namespace picked: `io.github.yalexaner` (see §6.1).
 - [ ] Bookmark `https://github.com/open-spaced-repetition/py-fsrs/tree/main/fsrs`
       (canonical algorithm reference) and
       `https://github.com/open-spaced-repetition/py-fsrs/tree/main/tests`
@@ -28,42 +47,45 @@ Conventions:
 
 ---
 
-## Phase 1 — Project skeleton
+## Phase 1 — Project skeleton ✅
 
 Goal: empty Kotlin Multiplatform library project that builds.
 
-- [ ] Create the GitHub repo (private to start is fine).
-- [ ] Clone locally; create initial branch `main`.
-- [ ] Add `.gitignore` from
-      `https://github.com/github/gitignore/blob/main/Kotlin.gitignore`
-      plus the `.idea/`, `.gradle/`, `build/`, `local.properties` lines.
-- [ ] Add Gradle wrapper: `gradle wrapper --gradle-version 8.10`
-      (or newer). Commit `gradlew`, `gradlew.bat`, `gradle/wrapper/`.
-- [ ] `[file:gradle.properties]` — paste the contents from §5.5.
-- [ ] `[file:settings.gradle.kts]` — paste from §5.3 (include `:fsrs-kt`).
-- [ ] `[file:gradle/libs.versions.toml]` — paste from §5.2; verify the
-      Kotlin / kotlinx-datetime / vanniktech versions are still current at
-      Maven Central.
-- [ ] `[file:build.gradle.kts]` (root) — minimal, just plugin
-      declarations with `apply false`:
+- [x] Create the GitHub repo (private to start is fine) —
+      https://github.com/yalexaner/fsrs-kt.
+- [x] Local repo: `jj` + colocated `git`, default branch `master`.
+- [x] Add `.gitignore` covering Kotlin/Gradle build output, IDE files,
+      `local.properties`, KMP `kotlin-js-store/`, etc.
+- [x] Add Gradle wrapper at **9.3.0** (was 8.10 in the original plan —
+      bumped for Kotlin 2.3.21 compatibility; see Status block).
+      `gradlew`, `gradlew.bat`, `gradle/wrapper/` committed.
+- [x] `[file:gradle.properties]` — pasted from §5.5.
+- [x] `[file:settings.gradle.kts]` — pasted from §5.3 (includes `:fsrs-kt`).
+- [x] `[file:gradle/libs.versions.toml]` — Kotlin **2.3.21**,
+      kotlinx-datetime **0.8.0**. Dokka/maven-publish deferred to
+      Phase 9/10 (only the kotlin-multiplatform plugin is declared for now).
+- [x] `[file:build.gradle.kts]` (root) — minimal, just:
       ```kotlin
       plugins {
           alias(libs.plugins.kotlin.multiplatform) apply false
-          alias(libs.plugins.dokka) apply false
-          alias(libs.plugins.maven.publish) apply false
       }
       ```
-- [ ] `[file:fsrs-kt/build.gradle.kts]` — initial version, **JVM target
-      only**, no publishing yet. We add other targets and publishing later.
-- [ ] Create source set directories:
-      `fsrs-kt/src/commonMain/kotlin/`, `fsrs-kt/src/commonTest/kotlin/`.
-- [ ] Smoke file `[file:fsrs-kt/src/commonMain/kotlin/.../Smoke.kt]` with
-      a single `internal fun hello() = "fsrs-kt"`.
-- [ ] Smoke test in `commonTest` that asserts `hello() == "fsrs-kt"`.
-- [ ] `./gradlew build` passes on local.
+- [x] `[file:fsrs-kt/build.gradle.kts]` — JVM target only,
+      `jvmToolchain(25)`, `explicitApi()`, `kotlinx-datetime` on
+      `commonMain`, `kotlin("test")` on `commonTest`. No publishing yet.
+- [x] Create source set directories:
+      `fsrs-kt/src/commonMain/kotlin/io/github/yalexaner/fsrs/`,
+      `fsrs-kt/src/commonTest/kotlin/io/github/yalexaner/fsrs/`.
+- [x] Smoke file
+      `[file:fsrs-kt/src/commonMain/kotlin/io/github/yalexaner/fsrs/Smoke.kt]`
+      with `internal fun hello(): String = "fsrs-kt"`.
+- [x] Smoke test in `commonTest` asserts `hello() == "fsrs-kt"`.
+- [x] `./gradlew build` passes on local (BUILD SUCCESSFUL).
+- [x] Initial commit (`chore: scaffold KMP library project`) pushed to
+      origin/master.
 
 **Definition of done:** clean clone of the repo runs `./gradlew build`
-successfully on JDK 21 with no errors.
+successfully on JDK 25 with no errors. **Met.**
 
 ---
 
@@ -384,7 +406,7 @@ Spec reference: §8.
 - [ ] `./gradlew dokkaHtml` generates output to
       `fsrs-kt/build/dokka/html`.
 - [ ] (Optional now, recommended) GitHub Pages workflow to publish Dokka
-      on every push to `main`.
+      on every push to `master`.
 
 ### Repo docs
 
