@@ -11,10 +11,12 @@ Conventions:
 - Definition-of-done at the end of each phase is the gate before moving on.
 - VCS: `jj` colocated with `git`; default branch is `master`.
 
-## Status (2026-05-17)
+## Status (2026-05-18)
 
 - **Phase 1 — Project skeleton:** ✅ complete. JVM build green on first run.
-- **Next:** Phase 2 (public types).
+- **Phase 2 — Public types:** ✅ complete. `./gradlew check` green;
+  `explicitApi`-clean.
+- **Next:** Phase 3 (pure math — formulas).
 
 ### Decisions that diverged from the original spec defaults
 
@@ -96,27 +98,27 @@ algorithm code yet.
 
 Spec reference: §3.3.
 
-- [ ] `[file:.../fsrs/Rating.kt]` — `enum class Rating` per §3.3.
-- [ ] `[file:.../fsrs/State.kt]` — `enum class State` per §3.3.
-- [ ] `[file:.../fsrs/Card.kt]` — `data class Card` per §3.3.
-- [ ] `[file:.../fsrs/ReviewLog.kt]` — `data class ReviewLog` per §3.3.
-- [ ] `[file:.../fsrs/Parameters.kt]` — `data class Parameters` with
+- [x] `[file:.../fsrs/Rating.kt]` — `enum class Rating` per §3.3.
+- [x] `[file:.../fsrs/State.kt]` — `enum class State` per §3.3.
+- [x] `[file:.../fsrs/Card.kt]` — `data class Card` per §3.3.
+- [x] `[file:.../fsrs/ReviewLog.kt]` — `data class ReviewLog` per §3.3.
+- [x] `[file:.../fsrs/Parameters.kt]` — `data class Parameters` with
       `init {}` block validating: `w.size == 21`, `desiredRetention` in
       range, step arrays non-negative, `maximumIntervalDays >= 1`.
-- [ ] `[file:.../fsrs/internal/DefaultWeights.kt]` — the 21-element
+- [x] `[file:.../fsrs/internal/DefaultWeights.kt]` — the 21-element
       `DoubleArray DEFAULT_W` from §2.3. Mark `internal`.
-- [ ] `Parameters.Default` companion uses `DEFAULT_W.copyOf()` so callers
+- [x] `Parameters.Default` companion uses `DEFAULT_W.copyOf()` so callers
       can't mutate the shared array.
-- [ ] Enable `explicitApi()` in `fsrs-kt/build.gradle.kts` under `kotlin`.
-- [ ] Fix any `explicitApi()` warnings on the types above.
-- [ ] Tests in `commonTest`:
-  - [ ] `Rating.fromValue` and `State.fromValue` round-trip.
-  - [ ] `Parameters` `init` rejects: 20 weights, 22 weights,
+- [x] Enable `explicitApi()` in `fsrs-kt/build.gradle.kts` under `kotlin`.
+- [x] Fix any `explicitApi()` warnings on the types above.
+- [x] Tests in `commonTest`:
+  - [x] `Rating.fromValue` and `State.fromValue` round-trip.
+  - [x] `Parameters` `init` rejects: 20 weights, 22 weights,
         `desiredRetention = 0`, `desiredRetention = 1`, negative step
         intervals, `maximumIntervalDays = 0`.
-  - [ ] `Parameters.Default` constructs and is independent across instances
+  - [x] `Parameters.Default` constructs and is independent across instances
         (mutating one doesn't affect another).
-  - [ ] `Card`, `ReviewLog` equality and `copy()` work as expected.
+  - [x] `Card`, `ReviewLog` equality and `copy()` work as expected.
 
 **Definition of done:** `./gradlew check` passes; public types are
 `explicitApi`-clean.
