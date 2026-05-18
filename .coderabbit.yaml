@@ -38,8 +38,11 @@ reviews:
         is org.jetbrains.kotlinx:kotlinx-datetime; do not propose adding
         coroutines, serialization, or logging libraries.
 
-        Times use kotlin.time.Instant (kotlinx-datetime 0.8.0+ aliases it).
-        Doubles are compared with tolerance 1e-9 in tests.
+        Times use kotlin.time.Instant. The legacy kotlinx.datetime.Instant
+        typealias was added in 0.7.1 but removed from the main 0.8.0 artifact
+        (we don't depend on the separate compatibility artifact). Flag any
+        kotlinx.datetime.Instant use — write kotlin.time.Instant instead.
+        Doubles are compared with absolute tolerance 1e-9 in tests.
 
     - path: 'fsrs-kt/src/commonTest/**/*.kt'
       instructions: |
