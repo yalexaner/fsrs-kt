@@ -1,0 +1,77 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+early_access: false
+
+reviews:
+  profile: chill
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: true
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - master
+
+  path_filters:
+    - '!**/build/**'
+    - '!**/.gradle/**'
+    - '!**/.kotlin/**'
+    - '!**/.jj/**'
+    - '!gradle/wrapper/**'
+    - '!gradlew'
+    - '!gradlew.bat'
+
+  path_instructions:
+    - path: 'fsrs-kt/src/commonMain/**/*.kt'
+      instructions: |
+        This is a pure FSRS-6 scheduler. Authoritative reference is
+        open-spaced-repetition/py-fsrs (v6.x). When math is touched, parity
+        with py-fsrs is the bar — call out drift, never invent values.
+
+        Public API rules: explicitApi() is enforced — every public
+        declaration must carry an explicit visibility modifier. Flag
+        accidental public exposure. The only runtime dependency we accept
+        is org.jetbrains.kotlinx:kotlinx-datetime; do not propose adding
+        coroutines, serialization, or logging libraries.
+
+        Times use kotlin.time.Instant (kotlinx-datetime 0.8.0+ aliases it).
+        Doubles are compared with tolerance 1e-9 in tests.
+
+    - path: 'fsrs-kt/src/commonTest/**/*.kt'
+      instructions: |
+        Tests must inject a fixed clock and seeded Random — flag any use of
+        Clock.System or Random.Default in test code. Float comparisons use
+        assertEquals(expected, actual, absoluteTolerance = 1e-9) — the named
+        argument is `absoluteTolerance`, not `tolerance`.
+
+    - path: 'fsrs-kt/src/commonMain/**/internal/**/*.kt'
+      instructions: |
+        Internal package — declarations must be `internal`, not `public`.
+        These are implementation details and not part of the API surface.
+
+    - path: '**/*.gradle.kts'
+      instructions: |
+        Plugin versions are pinned via gradle/libs.versions.toml — never
+        inline a version literal in a build script. Flag any version
+        string in a build.gradle.kts.
+
+  tools:
+    # CodeRabbit's bundled detekt is pinned to 1.23.x, which cannot read
+    # Kotlin 2.3.x metadata (detekt/detekt#8865). Our Gradle CI step runs
+    # detekt 2.0.0-alpha.x against the real source — leave that as the
+    # single source of truth and disable the bundled tool to avoid
+    # divergent findings.
+    detekt:
+      enabled: false
+    languagetool:
+      enabled: true
+      enabled_rules:
+        - EN_UNPAIRED_BRACKETS
+        - EN_QUOTES
+
+chat:
+  auto_reply: true
