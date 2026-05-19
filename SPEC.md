@@ -482,10 +482,12 @@ Rationale:
   Matches `py-fsrs`'s "UTC only" rule.
   > **Note (kotlinx-datetime 0.7+):** `Instant` was moved out of
   > `kotlinx.datetime` into the Kotlin stdlib's `kotlin.time` package.
-  > Versions 0.7.1+ ship a type alias `kotlinx.datetime.Instant =
-  > kotlin.time.Instant` for back-compat, so older code keeps compiling,
-  > but the canonical import in new code (and in the public API of
-  > `fsrs-kt`) is `kotlin.time.Instant`. The same applies to `Clock`
+  > Version 0.7.1 added a type alias `kotlinx.datetime.Instant =
+  > kotlin.time.Instant` for back-compat, but **0.8.0 republished the
+  > main artifact without those aliases** — they live in a separate
+  > compatibility artifact we don't depend on. So with our 0.8.0 pin,
+  > `kotlinx.datetime.Instant` is not available; the canonical (and only)
+  > import is `kotlin.time.Instant`. The same applies to `Clock`
   > (`kotlin.time.Clock`). `kotlinx-datetime` is still required for
   > `LocalDate`, `TimeZone`, formatting, etc.
 - Day boundaries (for the same-day vs inter-day distinction in §2.7–2.9) are
@@ -943,7 +945,8 @@ no `Random.Default` in tests.
 
 ### 7.3 Floating-point tolerance
 
-Compare doubles with `assertEquals(expected, actual, tolerance = 1e-9)`.
+Compare doubles with `assertEquals(expected, actual, absoluteTolerance = 1e-9)`
+(the `kotlin.test` named parameter is `absoluteTolerance`, not `tolerance`).
 Reference vectors generated on one platform/JDK should be reproducible to
 this tolerance everywhere. If a target shows wider drift, investigate before
 relaxing.

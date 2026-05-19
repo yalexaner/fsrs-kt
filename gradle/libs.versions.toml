@@ -1,9 +1,18 @@
 [versions]
 kotlin = "2.3.21"
 kotlinx-datetime = "0.8.0"
+# detekt 2.0.0-alpha.x is required for Kotlin 2.3.x metadata; the 1.23.x line
+# cannot read it (detekt/detekt#8865).
+detekt = "2.0.0-alpha.3"
+kover = "0.9.8"
 
 [libraries]
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+# formatting rule set was renamed to detekt-rules-ktlint-wrapper in 2.0.
+detekt-formatting = { module = "dev.detekt:detekt-rules-ktlint-wrapper", version.ref = "detekt" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+# detekt moved its Maven group + plugin id to `dev.detekt` in the 2.0 line.
+detekt = { id = "dev.detekt", version.ref = "detekt" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }

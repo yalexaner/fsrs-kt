@@ -1,0 +1,58 @@
+# detekt 2.0 config — overrides on top of the bundled defaults.
+# Allowed top-level keys: comments, complexity, config, console-reports,
+# coroutines, empty-blocks, exceptions, ktlint, naming, performance,
+# potential-bugs, processors, style.
+
+config:
+  validation: true
+  warningsAsErrors: true
+
+style:
+  MagicNumber:
+    active: true
+    ignoreNumbers: ['-1', '0', '1', '2']
+    ignoreEnums: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreHashCodeFunction: true
+    ignorePropertyDeclaration: true
+    ignoreLocalVariableDeclaration: true
+    ignoreConstantDeclaration: true
+  WildcardImport:
+    active: true
+  ForbiddenComment:
+    active: true
+    comments:
+      - reason: 'resolve or convert to a tracked issue.'
+        value: 'FIXME:'
+      - reason: 'do not ship.'
+        value: 'STOPSHIP:'
+
+complexity:
+  LongParameterList:
+    # FSRS-6 takes all 21 weights as one argument; keep generous.
+    allowedFunctionParameters: 12
+    allowedConstructorParameters: 25
+  TooManyFunctions:
+    active: false
+
+naming:
+  TopLevelPropertyNaming:
+    constantPattern: '[A-Z][_A-Z0-9]*'
+
+# ktlint-wrapper rule set (formerly `formatting:` in detekt 1.x).
+ktlint:
+  active: true
+  MaximumLineLength:
+    active: true
+    maxLineLength: 100
+
+# KDoc is enforced when Phase 9 of the spec ships — until then we lean on
+# explicitApi() for visibility hygiene only.
+comments:
+  UndocumentedPublicClass:
+    active: false
+  UndocumentedPublicFunction:
+    active: false
+  UndocumentedPublicProperty:
+    active: false
